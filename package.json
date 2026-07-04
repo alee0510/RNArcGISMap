@@ -9,6 +9,11 @@
     "start": "react-native start",
     "test": "jest"
   },
+  "codegenConfig": {
+    "name": "RNArcGISSpec",
+    "type": "all",
+    "jsSrcsDir": "src/native"
+  },
   "dependencies": {
     "@react-native/new-app-screen": "0.86.0",
     "react": "19.2.3",

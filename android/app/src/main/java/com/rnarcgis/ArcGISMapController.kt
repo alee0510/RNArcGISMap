@@ -12,6 +12,7 @@ import com.arcgismaps.mapping.symbology.SimpleMarkerSymbol
 import com.arcgismaps.mapping.symbology.SimpleMarkerSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
+import com.arcgismaps.tasks.networkanalysis.Route
 
 object ArcGISMapController {
     val basemapStyleState = mutableStateOf<BasemapStyle>(BasemapStyle.ArcGISTopographicBase)
@@ -43,5 +44,17 @@ object ArcGISMapController {
             graphic.attributes["id"] = pin.id
             pinsOverlay.graphics.add(graphic)
         }
+    }
+
+    fun setRoute(route: Route) {
+        routeOverlay.graphics.removeAll { it.attributes["type"] == "route" }
+        val lineSymbol = SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.green, 5f)
+        val routeGraphic = Graphic(route.routeGeometry, lineSymbol)
+        routeGraphic.attributes["type"] = "route"
+        routeOverlay.graphics.add((routeGraphic))
+    }
+
+    fun clearRoute() {
+        routeOverlay.graphics.removeAll { it.attributes["type"] == "route" }
     }
 }

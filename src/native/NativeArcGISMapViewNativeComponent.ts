@@ -12,7 +12,6 @@ export interface NativeProps extends ViewProps {
     latitude?: Double;
     zoomScale?: Double;
     pinsJson?: string; // serialized array of {lat, lng, id}
-    routeGeometryJson?: string; // serialized polyline from the routing TurboModule
     onMapTap?: DirectEventHandler<MapTapEven>;
 }
 

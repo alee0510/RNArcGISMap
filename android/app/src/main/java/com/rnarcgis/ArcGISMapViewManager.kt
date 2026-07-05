@@ -30,10 +30,6 @@ class ArcGISMapViewManager:
         view?.setPins(value)
     }
 
-    override fun setRouteGeometryJson(view: ArcGISMapFabricView?, value: String?) {
-        view?.setRoute(value)
-    }
-
     override fun setZoomScale(view: ArcGISMapFabricView?, value: Double) {
         view?.updateViewpoint(scale = value)
     }

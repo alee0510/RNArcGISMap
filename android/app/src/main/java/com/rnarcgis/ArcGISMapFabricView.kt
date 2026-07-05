@@ -82,11 +82,6 @@ class ArcGISMapFabricView @JvmOverloads constructor(
         ArcGISMapController.setPins(parsed)
     }
 
-    fun setRoute(json: String?) {
-        // graphicsOverlay.graphics.removeAll { it.attributes["type"] == "route" }
-        // parse polyline JSON -> Graphic(polyline, SimpleLineSymbol) with attributes["type"]="route"
-    }
-
     fun emitTapEvent(lat: Double, long: Double) {
         val reactContext = context as ThemedReactContext
         val surfaceId = UIManagerHelper.getSurfaceId(reactContext)

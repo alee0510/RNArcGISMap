@@ -13,7 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 class ArcGISMapModule (reactContext: ReactApplicationContext): NativeArcGISMapModuleSpec(reactContext)  {
 
     override fun getName() = "ArcGISMapModule"
-    private val score = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     override fun setBaseMapStyle(styleName: String?, promise: Promise?) {
         val style = when (styleName) {

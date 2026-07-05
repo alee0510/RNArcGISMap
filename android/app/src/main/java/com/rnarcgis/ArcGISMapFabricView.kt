@@ -2,6 +2,7 @@ package com.rnarcgis
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.widget.FrameLayout
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -14,6 +15,8 @@ import com.arcgismaps.toolkit.geoviewcompose.MapView
 import com.arcgismaps.toolkit.geoviewcompose.MapViewProxy
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
+import org.json.JSONArray
+import org.json.JSONException
 
 class ArcGISMapFabricView @JvmOverloads constructor(
     context: Context,
@@ -38,7 +41,6 @@ class ArcGISMapFabricView @JvmOverloads constructor(
                     ))
                 }
 
-
                 MapView(
                     modifier = Modifier,
                     arcGISMap = map,
@@ -61,8 +63,23 @@ class ArcGISMapFabricView @JvmOverloads constructor(
     }
 
     fun setPins(json: String?) {
-        // graphicsOverlay.graphics.clear()
-        // parse JSON -> Point, add PictureMarkerSymbol / SimpleMarkerSymbol graphics
+        val parsed = mutableListOf<PinData>()
+        if (!json.isNullOrEmpty()) {
+            try {
+                val arr = JSONArray(json)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
+                    parsed.add(PinData(
+                        id = obj.getString("id"),
+                        lat = obj.getDouble("lat"),
+                        long = obj.getDouble("long")
+                    ))
+                }
+            } catch (e: JSONException) {
+                Log.e("ArcGISMapFabricView", "Failed to parse pins JSON: $json", e)
+            }
+        }
+        ArcGISMapController.setPins(parsed)
     }
 
     fun setRoute(json: String?) {

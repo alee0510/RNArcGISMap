@@ -12,23 +12,8 @@ import androidx.compose.ui.platform.ComposeView
 import com.arcgismaps.mapping.Viewpoint
 import com.arcgismaps.toolkit.geoviewcompose.MapView
 import com.arcgismaps.toolkit.geoviewcompose.MapViewProxy
-import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
-import com.facebook.react.uimanager.events.Event
-
-class MapTapEvent(surfaceId: Int, viewTag: Int) : Event<MapTapEvent>(surfaceId, viewTag) {
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
-
-    override fun getEventName() = "onMapTap"
-
-    override fun getEventData(): WritableMap = Arguments.createMap().apply {
-        putDouble("latitude", latitude)
-        putDouble("longitude", longitude)
-    }
-}
 
 class ArcGISMapFabricView @JvmOverloads constructor(
     context: Context,

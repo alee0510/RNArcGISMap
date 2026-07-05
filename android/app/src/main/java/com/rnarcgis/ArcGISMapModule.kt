@@ -104,6 +104,12 @@ class ArcGISMapModule (reactContext: ReactApplicationContext): NativeArcGISMapMo
         }
     }
 
+    override fun recenterMap(lat: Double, lng: Double, scale: Double, promise: Promise?) {
+        ArcGISMapController.setViewPoint(lat, lng, scale)
+        promise?.resolve(null)
+    }
+
+
     companion object {
         const val NAME = "ArcGISMapModule"
     }

@@ -10,6 +10,7 @@ export enum BasemapStyle {
 
 export interface Spec extends TurboModule {
     setBaseMapStyle(styleName: BasemapStyle): Promise<BasemapStyle>
+    recenterMap(lat: number, lng: number, scale: number): Promise<void>
     computeRoute(routeGeoJson: string): Promise<void>
     clearRoute(): Promise<void>
 }

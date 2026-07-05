@@ -1,6 +1,7 @@
 package com.rnarcgis
 
 import android.graphics.drawable.BitmapDrawable
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -10,6 +11,7 @@ import com.arcgismaps.geometry.Point
 import com.arcgismaps.geometry.SpatialReference
 import com.arcgismaps.mapping.ArcGISMap
 import com.arcgismaps.mapping.BasemapStyle
+import com.arcgismaps.mapping.Viewpoint
 import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.symbology.SimpleLineSymbol
 import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
@@ -18,18 +20,73 @@ import com.arcgismaps.mapping.symbology.SimpleMarkerSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.tasks.networkanalysis.Route
+import com.arcgismaps.toolkit.geoviewcompose.MapViewProxy
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 object ArcGISMapController {
     val basemapStyleState = mutableStateOf<BasemapStyle>(BasemapStyle.ArcGISTopographicBase)
     val map = mutableStateOf(ArcGISMap(basemapStyleState.value))
 
-
     val routeOverlay = GraphicsOverlay()
     val pinsOverlay = GraphicsOverlay()
     val overlays = listOf(pinsOverlay, routeOverlay)
 
-    private val outlineMarker by lazy {
-        SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.red, 5f)
+    val mapViewProxy = MapViewProxy()
+    val isMapReady = mutableStateOf(false)
+
+    // Holds the most recent viewpoint request made before the map was ready
+    private var pendingViewpoint: Viewpoint? = null
+    private var pendingAnimated: Boolean = false
+
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+
+    val latState = mutableDoubleStateOf(34.0)
+    val longState = mutableDoubleStateOf(-118.0)
+    val scaleState = mutableDoubleStateOf(72000.0)
+
+    private const val DEFAULT_ROUTE_SCALE = 5000.0
+
+    fun setViewPoint(lat: Double? = null, long: Double? = null, scale: Double? = null, animated: Boolean = false) {
+        lat?.let { latState.doubleValue = it }
+        long?.let { longState.doubleValue = it }
+        scale?.let { scaleState.doubleValue = it }
+
+        val viewpoint = Viewpoint(latState.doubleValue, longState.doubleValue, scaleState.doubleValue)
+        if (!isMapReady.value) {
+            pendingViewpoint = viewpoint
+            pendingAnimated = animated
+            return
+        }
+
+        applyViewpoint(viewpoint, animated)
+    }
+
+    private fun applyViewpoint(viewpoint: Viewpoint, animated: Boolean) {
+        scope.launch {
+            if (animated) {
+                mapViewProxy.setViewpointAnimated(viewpoint, 1.seconds)
+            } else {
+                mapViewProxy.setViewpoint(viewpoint)
+            }
+        }
+    }
+
+    // Called by the view once the map is composed and ready
+    fun onMapReady() {
+        isMapReady.value = true
+        pendingViewpoint?.let { viewpoint ->
+            applyViewpoint(viewpoint, pendingAnimated)
+            pendingViewpoint = null
+        }
+    }
+
+    fun recenterToRoute(point: Point, scale: Double = DEFAULT_ROUTE_SCALE) {
+        setViewPoint(point.y, point.x, scale, true)
     }
 
     fun setBasemapStyle(style: BasemapStyle) {
@@ -84,6 +141,8 @@ object ArcGISMapController {
             startGraphic,
             endGraphic
         ))
+
+        recenterToRoute(startPoint)
     }
 
     fun clearRoute() {

@@ -1,6 +1,8 @@
 package com.rnarcgis
 
 import android.app.Application
+import com.arcgismaps.ApiKey
+import com.arcgismaps.ArcGISEnvironment
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -16,13 +18,19 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // add(MyReactNativePackage())
-          add(LocationPackage())
+          add(MyPackage())
         },
+
     )
   }
 
   override fun onCreate() {
     super.onCreate()
     loadReactNative(this)
+    val apiKey = BuildConfig.ARCGIS_API_KEY
+    ArcGISEnvironment.applicationContext = applicationContext
+    if (apiKey.isNotEmpty()) {
+      ArcGISEnvironment.apiKey = ApiKey.create(apiKey)
+    }
   }
 }

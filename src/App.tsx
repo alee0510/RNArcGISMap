@@ -4,6 +4,7 @@ import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LocationModule, { LocationPermission } from "@/native/NativeLocationModule";
 import ArcGISMapView from "@/native/NativeArcGISMapViewNativeComponent";
+import ArcGISMapModule from "@/native/NativeArcGISMapModule";
 import ErrorBoundaryWrapper from '@/utils/ErrorBoundary';
 
 function App() {
@@ -20,6 +21,13 @@ function App() {
     }
     const location = await LocationModule.getCurrentLocation()
     console.log("INFO: location", location)
+    testRoute()
+  }
+
+  const testRoute = () => {
+    setTimeout(async () => {
+      await ArcGISMapModule.computeRoute(JSON.stringify([34.05, -118.25, 34.06, -118.29]))
+    }, 5000)
   }
 
   useEffect(() => {
@@ -36,13 +44,13 @@ function App() {
             latitude={34.05}
             longitude={-118.25}
             zoomScale={100000.0}
-            pinsJson={JSON.stringify([
-              { lat: 34.05, long: -118.25, id: 'pin1' },
-              { lat: 34.03, long: -118.26, id: 'pin2' },
-              { lat: 34.04, long: -118.27, id: 'pin3' },
-              { lat: 34.05, long: -118.28, id: 'pin4' },
-              { lat: 34.06, long: -118.29, id: 'pin5' },
-            ])}
+            // pinsJson={JSON.stringify([
+            //   { lat: 34.05, long: -118.25, id: 'pin1' },
+            //   { lat: 34.03, long: -118.26, id: 'pin2' },
+            //   { lat: 34.04, long: -118.27, id: 'pin3' },
+            //   { lat: 34.05, long: -118.28, id: 'pin4' },
+            //   { lat: 34.06, long: -118.29, id: 'pin5' },
+            // ])}
             onMapTap={(e) => console.log(e.nativeEvent.latitude, e.nativeEvent.longitude)}
           />
         </View>

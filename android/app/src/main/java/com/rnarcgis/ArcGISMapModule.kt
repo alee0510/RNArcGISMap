@@ -49,14 +49,26 @@ class ArcGISMapModule (reactContext: ReactApplicationContext): NativeArcGISMapMo
                     endLong = parsed.getDouble(3)
                 )
 
+                val startPoint = Point(
+                    routeGeoData.startLong,
+                    routeGeoData.startLat,
+                    SpatialReference.wgs84()
+                )
+
+                val endPoint = Point(
+                    routeGeoData.endLong,
+                    routeGeoData.endLat,
+                    SpatialReference.wgs84()
+                )
+
                 val solveResult = withContext(Dispatchers.IO) {
                     val routeTask = RouteTask(
                         "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World"
                     )
                     val parameters = routeTask.createDefaultParameters().getOrThrow().apply {
                         setStops(listOf(
-                            Stop(Point(routeGeoData.startLong, routeGeoData.startLat, SpatialReference.wgs84())),
-                            Stop(Point(routeGeoData.endLong, routeGeoData.endLat, SpatialReference.wgs84()))
+                            Stop(startPoint),
+                            Stop(endPoint)
                         ))
                         returnDirections = true
                     }
@@ -77,7 +89,7 @@ class ArcGISMapModule (reactContext: ReactApplicationContext): NativeArcGISMapMo
                     put("totalTime", route.totalTime)
                 }
 
-                ArcGISMapController.setRoute(route)
+                ArcGISMapController.setRoute(startPoint, endPoint, route)
                 promise?.resolve(jsonObject.toString())
             } catch (e: Exception) {
                 promise?.reject("ROUTE_ERROR", e.message, e)

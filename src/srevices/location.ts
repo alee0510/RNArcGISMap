@@ -1,6 +1,6 @@
 import LocationModule, { LocationPermission, Coordinates } from "@/native/NativeLocationModule";
 
-export async function requestLocationPermission(): Promise<Coordinates | undefined> {
+async function getCurrentLocation(): Promise<Coordinates | undefined> {
     try {
         const result = await LocationModule.requestLocationPermission();
         if (result === LocationPermission.DENIED) {
@@ -12,5 +12,7 @@ export async function requestLocationPermission(): Promise<Coordinates | undefin
     } catch (error) {
         console.log("ERROR:", error)
     }
-
 }
+
+const LocationService = Object.freeze({ getCurrentLocation })
+export default LocationService

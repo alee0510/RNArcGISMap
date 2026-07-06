@@ -59,6 +59,7 @@ export interface AddressAttributes {
     Postal: string
     PostalExt: string
     CountryCode: string
+    CntryName: string
     StrucType: string
     StrucDet: string
 }
@@ -71,4 +72,8 @@ export interface AddressLocation {
 export type Address = {
     address: AddressAttributes,
     location: AddressLocation
+}
+
+export type AccessTokenResponse = {
+    access_token: string
 }

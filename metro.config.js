@@ -1,13 +1,7 @@
-const path = require('path');
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
 const config = {
-  projectRoot: __dirname,
-  resolver: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-  },
+  projectRoot: __dirname
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);

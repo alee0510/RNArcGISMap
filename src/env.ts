@@ -1,8 +1,5 @@
 import {
     ARCGISMAP_KEY,
-    ARCGIS_CLIENT_ID,
-    ARCGIS_CLIENT_SECRET,
-    ARCGIS_OAUTH_URL,
     ARCGIS_GEOCODE_SUGGEST_URL,
     ARCGIS_GEOCODE_FIND_CANDIDATE,
     ARCGIS_GEOCODE_REVERSE_CODE
@@ -11,9 +8,6 @@ import * as Z from 'zod'
 
 const envSchema = Z.object({
     ARCGISMAP_KEY: Z.string(),
-    ARCGIS_CLIENT_ID: Z.string(),
-    ARCGIS_CLIENT_SECRET: Z.string(),
-    ARCGIS_OAUTH_URL: Z.string(),
     ARCGIS_GEOCODE_SUGGEST_URL: Z.string(),
     ARCGIS_GEOCODE_FIND_CANDIDATE: Z.string(),
     ARCGIS_GEOCODE_REVERSE_CODE: Z.string(),
@@ -21,9 +15,6 @@ const envSchema = Z.object({
 
 export const env = envSchema.parse({
     ARCGISMAP_KEY,
-    ARCGIS_CLIENT_ID,
-    ARCGIS_CLIENT_SECRET,
-    ARCGIS_OAUTH_URL,
     ARCGIS_GEOCODE_SUGGEST_URL,
     ARCGIS_GEOCODE_FIND_CANDIDATE,
     ARCGIS_GEOCODE_REVERSE_CODE,

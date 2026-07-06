@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useLocationStore } from '@/hooks/useLocation';
-import ErrorBoundaryWrapper from '@/utils/ErrorBoundary';
-import LocationService from "@/srevices/Location"
+import { useLocationStore } from '@/hooks/useLocation.ts';
+import ErrorBoundaryWrapper from '@/utils/ErrorBoundary.tsx';
+import LocationService from "@/srevices/Location.ts"
 
 import LoadingScreen from '@/screens/LoadingScreen.tsx';
 import HomeScreen from '@/screens/HomeScreen.tsx';

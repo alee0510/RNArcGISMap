@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -5,12 +6,12 @@ import { useLocationStore } from '@/hooks/useLocation';
 import ErrorBoundaryWrapper from '@/utils/ErrorBoundary';
 import LocationService from "@/srevices/Location"
 
-import LoadingScreen from '@/screens/LoadingScreen';
-import { useEffect } from 'react';
+import LoadingScreen from '@/screens/LoadingScreen.tsx';
+import HomeScreen from '@/screens/HomeScreen.tsx';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-  const { setLocation } = useLocationStore();
+  const { setLocation, isLoading } = useLocationStore();
 
   const init = async () => {
     const result = await LocationService.getCurrentLocation()
@@ -29,7 +30,7 @@ function App() {
     <ErrorBoundaryWrapper>
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <LoadingScreen />
+        {isLoading ? <LoadingScreen /> : <HomeScreen />}
       </SafeAreaProvider>
     </ErrorBoundaryWrapper>
   );

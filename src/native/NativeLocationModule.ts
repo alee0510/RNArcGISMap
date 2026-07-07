@@ -1,7 +1,7 @@
 import { TurboModuleRegistry } from 'react-native';
 import type { TurboModule } from 'react-native';
 
-interface Location {
+export interface Coordinates {
   latitude: number;
   longitude: number;
   accuracy: number;
@@ -16,7 +16,7 @@ export enum LocationPermission {
 export interface Spec extends TurboModule {
   checkLocationPermission(): Promise<LocationPermission>;
   requestLocationPermission(): Promise<LocationPermission>;
-  getCurrentLocation(): Promise<Location | null>;
+  getCurrentLocation(): Promise<Coordinates | null>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('LocationModule');

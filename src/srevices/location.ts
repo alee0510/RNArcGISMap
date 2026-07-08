@@ -1,4 +1,5 @@
-import LocationModule, { LocationPermission, Coordinates } from "@/native/NativeLocationModule";
+import { NativeEventEmitter, NativeModules } from "react-native";
+import LocationModule, { LocationPermission, Coordinates } from "@/native/NativeLocationModule.ts";
 
 async function getCurrentLocation(): Promise<Coordinates | undefined> {
     try {
@@ -14,5 +15,19 @@ async function getCurrentLocation(): Promise<Coordinates | undefined> {
     }
 }
 
-const LocationService = Object.freeze({ getCurrentLocation })
+export type LocationSubscription = {
+    remove: () => void;
+}
+const locationEmitter = new NativeEventEmitter(NativeModules.LocationModule)
+async function startLocationUpdates(intervalInMs: number, onLocationUpdate: (event: Coordinates) => void): Promise<LocationSubscription | undefined> {
+    try {
+        locationEmitter.addListener('onLocationUpdate', onLocationUpdate);
+        await LocationModule.startLocationUpdates(intervalInMs);
+        return { remove: () => locationEmitter.removeAllListeners('onLocationUpdate') }
+    } catch (error) {
+        console.log("ERROR:", error)
+    }
+}
+
+const LocationService = Object.freeze({ getCurrentLocation, startLocationUpdates })
 export default LocationService

@@ -5,6 +5,7 @@ import IconButton from "@/components/ui/IconButton";
 import ButtonNavBar from "@/components/BottonNavBar.tsx";
 // import Header from "@/components/Header.tsx";
 import Map from "@/components/Map.tsx";
+import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -15,7 +16,7 @@ export default function HomeScreen() {
             <Map />
             {/* <Header city={address.City} country={address.CntryName} /> */}
             <ButtonNavBar />
-            <IconButton icon="crosshairs" border={1} style={styles.recenter} />
+            <ReCenterButton />
             <View style={styles.zoomaction}>
                 <IconButton icon="plus" border={1} />
                 <IconButton icon="minus" border={1} />
@@ -28,11 +29,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: MD3Colors.primary90
-    },
-    recenter: {
-        position: "absolute",
-        bottom: 150,
-        right: 20,
     },
     zoomaction: {
         display: "flex",

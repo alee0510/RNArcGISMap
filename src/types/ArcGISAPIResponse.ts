@@ -73,7 +73,3 @@ export type Address = {
     address: AddressAttributes,
     location: AddressLocation
 }
-
-export type AccessTokenResponse = {
-    access_token: string
-}

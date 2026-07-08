@@ -1,15 +1,15 @@
 import { StyleSheet } from "react-native"
-import { useLocationStore } from "@/hooks/useLocation.ts"
+import { useMapLocation } from "@/hooks/useMapLocation"
 import ArcGISMapView from "@/native/NativeArcGISMapViewNativeComponent.ts"
 
 export default function Map() {
-    const { location } = useLocationStore()
+    const { location, zoom } = useMapLocation()
     return (
         <ArcGISMapView
             style={styles.map}
             latitude={location?.latitude}
             longitude={location?.longitude}
-            zoomScale={70000.0}
+            zoomScale={zoom}
         />
     )
 }

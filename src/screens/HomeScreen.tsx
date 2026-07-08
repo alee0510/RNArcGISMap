@@ -1,24 +1,24 @@
-import { useLocationStore } from "@/hooks/useLocation.ts";
+// import { useLocationStore } from "@/hooks/useLocation.ts";
 import { MD3Colors } from 'react-native-paper';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import ActionButton from "@/components/ActionButton.tsx";
+import IconButton from "@/components/ui/IconButton";
 import ButtonNavBar from "@/components/BottonNavBar.tsx";
-import Header from "@/components/Header.tsx";
+// import Header from "@/components/Header.tsx";
 import Map from "@/components/Map.tsx";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function HomeScreen() {
-    const { address } = useLocationStore()
+    // const { address } = useLocationStore()
     return (
         <View style={styles.container}>
             <Map />
-            <Header city={address.City} country={address.CntryName} />
+            {/* <Header city={address.City} country={address.CntryName} /> */}
             <ButtonNavBar />
-            <ActionButton icon="crosshairs" border={1} style={styles.recenter} />
+            <IconButton icon="crosshairs" border={1} style={styles.recenter} />
             <View style={styles.zoomaction}>
-                <ActionButton icon="plus" border={1} />
-                <ActionButton icon="minus" border={1} />
+                <IconButton icon="plus" border={1} />
+                <IconButton icon="minus" border={1} />
             </View>
         </View>
     );

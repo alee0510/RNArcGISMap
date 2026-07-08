@@ -2,7 +2,6 @@ import axios from "axios"
 import { env } from "@/env"
 import { Coordinates } from "@/native/NativeLocationModule"
 import {
-    AccessTokenResponse,
     Address,
     AddressAttributes,
     Candidate,
@@ -13,26 +12,6 @@ import {
 
 type Location = Omit<Coordinates, "accuracy">;
 
-export async function getArcGISToken(): Promise<string | null> {
-    try {
-        const response = await axios.post<AccessTokenResponse>(env.ARCGIS_OAUTH_URL, params.toString(), {
-            params: {
-                f: 'json',
-                client_id: env.ARCGIS_CLIENT_ID,
-                client_secret: env.ARCGIS_CLIENT_SECRET,
-                grant_type: 'client_credentials'
-            },
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        })
-        console.log("INFO: token response status", response.status, response.data)
-        return response.data.access_token
-    } catch (error) {
-        console.error("Error in getArcGISToken:", error)
-        return null
-    }
-}
 export async function getSuggestion(searchText: string, location?: Location): Promise<Suggestion[]> {
     if (!searchText || !location) return []
     try {

@@ -1,6 +1,6 @@
 import { Text, MD3Colors } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
-import ActionButton from "@/components/ActionButton.tsx";
+// import ActionButton from "@/components/ActionButton.tsx";
 
 export default function Header({
     city,
@@ -12,10 +12,10 @@ export default function Header({
     return (
         <View style={styles.container}>
             <View style={styles.left}>
-                <ActionButton icon="map-marker-outline" border={0} />
+                {/* <ActionButton icon="map-marker-outline" border={0} /> */}
                 <Text variant="titleSmall" style={styles.leftText}>{`${city}, ${country}`}</Text>
             </View>
-            <ActionButton icon="layers-outline" border={1} />
+            {/* <ActionButton icon="layers-outline" border={1} /> */}
         </View>
     )
 }

@@ -1,6 +1,6 @@
 import { StyleSheet, Pressable } from "react-native"
 import { Icon, MD3Colors } from "react-native-paper"
-import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 export default function ReCenterButton() {

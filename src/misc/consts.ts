@@ -3,7 +3,7 @@ import { BasemapStyle } from "@/native/NativeArcGISMapModule.ts"
 
 export const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 export const MIN_SHEET_HEIGHT = Math.abs(SCREEN_HEIGHT / 4)
-export const OVER_SHEET_TESHOLD = 20
+export const OFFSET_SHEET_TESHOLD = 20
 
 export type Thumbnail = {
     id: string

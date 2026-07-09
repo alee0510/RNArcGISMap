@@ -1,7 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-native/no-inline-styles */
 import { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import { useMapLocation } from '@/hooks/useMapLocation.ts';
 import ErrorBoundaryWrapper from '@/utils/ErrorBoundary.tsx';
 import LocationService from "@/srevices/LocationService.ts"
@@ -23,15 +27,17 @@ function App() {
   // side-effect
   useEffect(() => {
     init()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <ErrorBoundaryWrapper>
-      <SafeAreaProvider>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        {isLoading ? <LoadingScreen /> : <HomeScreen />}
-      </SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          {isLoading ? <LoadingScreen /> : <HomeScreen />}
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+
     </ErrorBoundaryWrapper>
   );
 }

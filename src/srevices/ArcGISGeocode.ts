@@ -1,6 +1,6 @@
 import axios from "axios"
-import { env } from "@/env"
-import { Coordinates } from "@/native/NativeLocationModule"
+import { env } from "@/env.ts"
+import { Coordinates } from "@/native/NativeLocationModule.ts"
 import {
     Address,
     AddressAttributes,
@@ -8,7 +8,7 @@ import {
     CandidateItem,
     Suggestion,
     Suggestions,
-} from "@/types/ArcGISAPIResponse"
+} from "@/types/ArcGISAPIResponse.ts"
 
 type Location = Omit<Coordinates, "accuracy">;
 

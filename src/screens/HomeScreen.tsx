@@ -1,10 +1,10 @@
 // import { useLocationStore } from "@/hooks/useLocation.ts";
 import { MD3Colors } from 'react-native-paper';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import IconButton from "@/components/ui/IconButton";
+import IconButton from "@/components/ui/IconButton.tsx";
 import ButtonNavBar from "@/components/BottonNavBar.tsx";
 // import Header from "@/components/Header.tsx";
-import Map from "@/components/Map.tsx";
+import Map from "@/components/feature/Map.tsx";
 import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');

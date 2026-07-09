@@ -1,5 +1,6 @@
 import { NativeEventEmitter, NativeModules } from "react-native";
 import LocationModule, { LocationPermission, Coordinates } from "@/native/NativeLocationModule.ts";
+import ArcGISMapModule from "@/native/NativeArcGISMapModule.ts"
 
 async function getCurrentLocation(): Promise<Coordinates | undefined> {
     try {
@@ -8,8 +9,9 @@ async function getCurrentLocation(): Promise<Coordinates | undefined> {
             throw Error("Location permission denied")
         }
         const coordinates = await LocationModule.getCurrentLocation();
-        if (coordinates?.accuracy) return coordinates;
-        throw Error("Failed to get current location")
+        if (!coordinates) throw Error("Failed to get current location")
+        await ArcGISMapModule.setUserLocation(coordinates?.latitude, coordinates?.longitude, true)
+        return coordinates
     } catch (error) {
         console.log("ERROR:", error)
     }

@@ -14,6 +14,7 @@ interface IconButtonProps {
     border?: number,
     active?: boolean,
     style?: ViewStyle
+    onPress?: () => void
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
@@ -28,7 +29,8 @@ export default function IconButton({
     borderColor = MD3Colors.primary40,
     border = 0,
     active = false,
-    style
+    style,
+    onPress
 }: IconButtonProps) {
     const scale = useSharedValue(1)
 
@@ -50,6 +52,7 @@ export default function IconButton({
         <AnimatedPressable
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
+            onPress={onPress}
             style={[
                 animatedStyle,
                 styles.container,

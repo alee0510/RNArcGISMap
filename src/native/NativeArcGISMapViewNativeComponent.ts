@@ -12,7 +12,7 @@ interface MapCenterStateEvent {
 }
 
 export interface NativeProps extends ViewProps {
-    pinsJson?: string; // serialized array of {lat, lng, id}
+    pinsJson?: string; // serialized array of {lat, long, id}
     onMapTap?: DirectEventHandler<MapTapEven>;
     onMapCenterStateChange?: DirectEventHandler<MapCenterStateEvent>
 }

@@ -194,8 +194,11 @@ object ArcGISMapController {
         val userPoint = currentLocationPoint.value ?: return
         val center = viewpoint.targetGeometry.extent.center
 
+        val centerSrc = center.spatialReference ?: return
+        val projectUserPoint = GeometryEngine.projectOrNull(userPoint, centerSrc) ?: return
+
         val distanceMeters = GeometryEngine.distanceGeodeticOrNull(
-            point1 = userPoint,
+            point1 = projectUserPoint,
             point2 = center,
             distanceUnit = LinearUnit(LinearUnitId.Meters),
             azimuthUnit = null,

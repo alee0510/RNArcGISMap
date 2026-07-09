@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { Icon, MD3Colors } from "react-native-paper"
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
@@ -35,12 +35,11 @@ function TabItem({ active, icon, onPress }: { active: boolean, icon: string, onP
     )
 }
 
-export default function BottomNavBar() {
-    const [active, setActive] = useState("01")
+export default function BottomNavBar({ focusId, onTabFocus }: { focusId: string, onTabFocus: (id: string) => void }) {
     const tabPositionX = useSharedValue(0)
 
-    const onTabPress = (id: string, index: number) => {
-        setActive(id)
+    const onTabPress = async (id: string, index: number) => {
+        onTabFocus(id)
         tabPositionX.value = withSpring(50 * index, { duration: 350 })
     }
 
@@ -60,7 +59,7 @@ export default function BottomNavBar() {
                 return <TabItem
                     key={tabBar.id}
                     icon={tabBar.name}
-                    active={active === tabBar.id}
+                    active={focusId === tabBar.id}
                     onPress={() => onTabPress(tabBar.id, index)}
                 />
             })}

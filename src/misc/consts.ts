@@ -59,3 +59,71 @@ export const MapThumbnails: Thumbnail[] = [
     },
 
 ]
+
+type LandMark = {
+    id: string
+    name: string
+    type: string
+    lat: number
+    long: number
+    distance_meters: number
+}
+
+export const LandMarks: LandMark[] = [
+    {
+        "id": "marker_001",
+        "name": "Local Point Alpha",
+        "type": "landmark",
+        "lat": -7.134521,
+        "long": 111.168122,
+        "distance_meters": 372
+    },
+    {
+        "id": "marker_002",
+        "name": "Intersection Checkpoint",
+        "type": "junction",
+        "lat": -7.139112,
+        "long": 111.162451,
+        "distance_meters": 447
+    },
+    {
+        "id": "marker_003",
+        "name": "North Field Ridge",
+        "type": "nature",
+        "lat": -7.131235,
+        "long": 111.166110,
+        "distance_meters": 574
+    },
+    {
+        "id": "marker_004",
+        "name": "Rural Utility Outpost",
+        "type": "infrastructure",
+        "lat": -7.137890,
+        "long": 111.171243,
+        "distance_meters": 673
+    },
+    {
+        "id": "marker_005",
+        "name": "South Track Entry",
+        "type": "pathway",
+        "lat": -7.142104,
+        "long": 111.164890,
+        "distance_meters": 643
+    },
+    {
+        "id": "marker_006",
+        "name": "East Community Hub",
+        "type": "settlement",
+        "lat": -7.135210,
+        "long": 111.173115,
+        "distance_meters": 866
+    },
+    {
+        "id": "marker_007",
+        "name": "West Valley Point",
+        "type": "nature",
+        "lat": -7.133140,
+        "long": 111.158230,
+        "distance_meters": 858
+    }
+]

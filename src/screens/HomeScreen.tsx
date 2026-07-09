@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { MD3Colors } from 'react-native-paper';
 
 import ButtonNavBar from "@/components/BottonNavBar.tsx";
+import MapStyleBottomSheet from '@/components/feature/MapStyleBottomSheet.tsx';
 import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
 import ZoomButton from '@/components/feature/ZoomButton.tsx';
 import ArcGISMapView from "@/native/NativeArcGISMapViewNativeComponent.ts"
@@ -19,6 +20,7 @@ export default function HomeScreen() {
             <ButtonNavBar />
             <ReCenterButton isCentered={isCentered} />
             <ZoomButton />
+            <MapStyleBottomSheet />
         </View>
     );
 }

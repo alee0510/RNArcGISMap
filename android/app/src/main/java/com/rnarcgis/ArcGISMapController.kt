@@ -14,6 +14,7 @@ import com.arcgismaps.geometry.LinearUnitId
 import com.arcgismaps.geometry.Point
 import com.arcgismaps.geometry.SpatialReference
 import com.arcgismaps.mapping.ArcGISMap
+import com.arcgismaps.mapping.Basemap
 import com.arcgismaps.mapping.BasemapStyle
 import com.arcgismaps.mapping.Viewpoint
 import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
@@ -104,7 +105,7 @@ object ArcGISMapController {
 
     fun setBasemapStyle(style: BasemapStyle) {
         basemapStyleState.value = style
-        map.value = ArcGISMap(style) // recreate map; view observes map.value and recomposes
+        map.value.setBasemap(Basemap(style))
 
     }
 

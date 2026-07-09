@@ -6,13 +6,14 @@ import { MD3Colors } from 'react-native-paper';
 import Animated, { FadeIn, FadeOut, interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated"
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-worklets';
+
 import IconButton from '@/components/ui/IconButton.tsx';
 import { MIN_SHEET_HEIGHT, OFFSET_SHEET_TESHOLD, MapThumbnails, SCREEN_HEIGHT } from "@/misc/consts.ts"
+import ArcGISMapModule, { BasemapStyle } from "@/native/NativeArcGISMapModule.ts"
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 function MapThumbnailView({ uri, label, isSelected, onPress }: { uri: string, label: string, isSelected: boolean, onPress: () => void }) {
     const progress = useSharedValue(isSelected ? 1 : 0)
-
     const animatedImageStyle = useAnimatedStyle(() => {
         return {
             borderWidth: interpolate(progress.value, [0, 1], [0, 3])
@@ -57,6 +58,10 @@ export default function BottomSheet() {
         offset.value = 0
     }
     const onClose = () => setVisible(false)
+    const onSelect = async (id: string, style: BasemapStyle) => {
+        await ArcGISMapModule.setBaseMapStyle(style)
+        setSelectedId(id)
+    }
 
     const pan = usePanGesture({
         onUpdate: e => {
@@ -98,7 +103,7 @@ export default function BottomSheet() {
                                         label={thumbnail.name}
                                         uri={thumbnail.thumbnailUrl}
                                         isSelected={thumbnail.id === selectedId}
-                                        onPress={() => setSelectedId(thumbnail.id)}
+                                        onPress={() => onSelect(thumbnail.id, thumbnail.style)}
                                     />
                                 ))}
                             </View>

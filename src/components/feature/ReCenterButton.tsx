@@ -1,14 +1,18 @@
+import { useEffect } from "react";
 import { StyleSheet, Pressable } from "react-native"
 import { Icon, MD3Colors } from "react-native-paper"
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import ArGISMapModule from "@/native/NativeArcGISMapModule.ts"
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
-export default function ReCenterButton() {
-    const progress = useSharedValue(0)
+export default function ReCenterButton({ isCentered }: { isCentered: boolean }) {
+    const progress = useSharedValue(1)
 
     // 0 = not-centered, 1 = centered
-    const toggle = () => {
-        progress.value = progress.value === 0 ? 1 : 0
+    const toggle = async () => {
+        if (isCentered) return
+        progress.value = withTiming(1)
+        await ArGISMapModule.recenterToCurrentLocation()
     }
 
     const crosshairsAnimatedStyle = useAnimatedStyle(() => {
@@ -18,6 +22,11 @@ export default function ReCenterButton() {
             position: 'absolute',
         }
     })
+
+    useEffect(() => {
+        if (isCentered) return
+        progress.value = withTiming(0)
+    }, [isCentered, progress])
 
     const crosshairsGpsAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -33,7 +42,9 @@ export default function ReCenterButton() {
     })
 
     return (
-        <AnimatedPressable style={[styles.container, containerAnimated]} onPress={toggle}>
+        <AnimatedPressable style={[styles.container, containerAnimated]} onPress={() => {
+            if (!isCentered) toggle()
+        }}>
             <Animated.View style={crosshairsAnimatedStyle}>
                 <Icon source="crosshairs" size={24} color={MD3Colors.primary40} />
             </Animated.View>

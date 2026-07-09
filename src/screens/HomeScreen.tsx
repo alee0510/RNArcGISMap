@@ -1,20 +1,18 @@
-// import { useLocationStore } from "@/hooks/useLocation.ts";
 import { MD3Colors } from 'react-native-paper';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import IconButton from "@/components/ui/IconButton.tsx";
 import ButtonNavBar from "@/components/BottonNavBar.tsx";
-// import Header from "@/components/Header.tsx";
-import Map from "@/components/feature/Map.tsx";
 import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
+import ArcGISMapView from "@/native/NativeArcGISMapViewNativeComponent.ts"
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function HomeScreen() {
-    // const { address } = useLocationStore()
     return (
         <View style={styles.container}>
-            <Map />
-            {/* <Header city={address.City} country={address.CntryName} /> */}
+            <ArcGISMapView style={styles.map} onMapCenterStateChange={e => {
+                console.log("LOG: onMapCenterStageChange", e.nativeEvent.isCentered)
+            }} />
             <ButtonNavBar />
             <ReCenterButton />
             <View style={styles.zoomaction}>
@@ -29,6 +27,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: MD3Colors.primary90
+    },
+    map: {
+        position: "absolute",
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: 0
     },
     zoomaction: {
         display: "flex",

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Coordinates } from "@/native/NativeLocationModule.ts"
-import { reverseGeocode } from "@/srevices/ArcGISGeocode.ts"
+import { reverseGeocode } from "@/srevices/ArcGISGeocodeService.ts"
 
 type Location = Omit<Coordinates, "accuracy">
 

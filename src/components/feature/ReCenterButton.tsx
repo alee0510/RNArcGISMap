@@ -2,7 +2,9 @@ import { useEffect } from "react";
 import { StyleSheet, Pressable } from "react-native"
 import { Icon, MD3Colors } from "react-native-paper"
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+
 import ArGISMapModule from "@/native/NativeArcGISMapModule.ts"
+import { SCREEN_HEIGHT } from "@/misc/consts.ts"
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 export default function ReCenterButton({ isCentered }: { isCentered: boolean }) {
@@ -62,7 +64,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         padding: 10,
         position: "absolute",
-        bottom: 150,
+        bottom: SCREEN_HEIGHT * 0.15,
         right: 20,
         justifyContent: "center",
         alignItems: "center",

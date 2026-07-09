@@ -5,8 +5,6 @@ import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } f
 
 import { SCREEN_HEIGHT, TabBarItems } from "@/misc/consts.ts"
 
-// const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
-
 const Icons: Record<string, (props: any) => React.ReactElement> = {
     map: (props: any) => <Icon source="map" size={24} {...props} />,
     pin: (props: any) => <Icon source="pin" size={24} {...props} />,

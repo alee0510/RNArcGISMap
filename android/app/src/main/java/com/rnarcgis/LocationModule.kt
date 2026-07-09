@@ -146,7 +146,7 @@ class LocationModule(reactContext: ReactApplicationContext) : NativeLocationModu
 
     override fun addListener(eventName: String?, callback: Callback?) {}
 
-    override fun removeListener(eventName: String?) {}
+    override fun removeListeners(eventName: String?) {}
 
     companion object {
         const val NAME = "LocationModule"

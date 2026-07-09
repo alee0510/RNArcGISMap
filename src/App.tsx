@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useLocationStore } from '@/hooks/useLocation.ts';
+import { useMapLocation } from '@/hooks/useMapLocation';
 import ErrorBoundaryWrapper from '@/utils/ErrorBoundary.tsx';
 import LocationService from "@/srevices/Location.ts"
 
@@ -11,7 +11,7 @@ import HomeScreen from '@/screens/HomeScreen.tsx';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-  const { setLocation, isLoading } = useLocationStore();
+  const { setLocation, isLoading } = useMapLocation();
 
   const init = async () => {
     const result = await LocationService.getCurrentLocation()

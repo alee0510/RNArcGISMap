@@ -6,17 +6,23 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import com.facebook.fbreact.specs.NativeLocationModuleSpec
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.google.android.gms.location.CurrentLocationRequest
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 
 class LocationModule(reactContext: ReactApplicationContext) : NativeLocationModuleSpec(reactContext) {
 
     private val focusedLocationClient = LocationServices.getFusedLocationProviderClient(reactContext)
+    private var locationCallback: LocationCallback? = null
 
     override fun getName() = "LocationModule"
 
@@ -95,6 +101,52 @@ class LocationModule(reactContext: ReactApplicationContext) : NativeLocationModu
                 promise?.reject("E_LOCATION_ERROR", exception.message)
             }
     }
+
+    override fun startLocationUpdates(intervalInMs: Double, promise: Promise?) {
+        val request = LocationRequest.Builder(intervalInMs.toLong())
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .build()
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(p0: LocationResult) {
+                val location = p0.lastLocation ?: return
+                emitLocationUpdate(location.latitude, location.longitude, location.accuracy)
+            }
+        }
+
+        try {
+            focusedLocationClient.requestLocationUpdates(
+                request,
+                locationCallback as LocationCallback,
+                reactApplicationContext.mainLooper
+            )
+            promise?.resolve(null)
+        }
+        catch (e: SecurityException) {
+            promise?.reject("PERMISSION_ERROR", "Location permission not granted", e)
+        }
+    }
+
+    private fun emitLocationUpdate(lat: Double, long: Double, accuracy: Float) {
+        val params = Arguments.createMap().apply {
+            putDouble("latitude", lat)
+            putDouble("longitude", long)
+            putDouble("accuracy", accuracy.toDouble())
+        }
+        reactApplicationContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit("onLocationUpdate", params)
+    }
+
+    override fun stopLocationUpdates(promise: Promise?) {
+        locationCallback?.let { focusedLocationClient.removeLocationUpdates { it } }
+        locationCallback = null
+        promise?.resolve(null)
+    }
+
+    override fun addListener(eventName: String?, callback: Callback?) {}
+
+    override fun removeListeners(eventName: String?) {}
 
     companion object {
         const val NAME = "LocationModule"

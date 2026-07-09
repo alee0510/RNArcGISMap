@@ -24,9 +24,14 @@ class ArcGISMapFabricView @JvmOverloads constructor(
         val composeView = ComposeView(context).apply {
             setContent {
                 val map by ArcGISMapController.map
+                val isCentered by ArcGISMapController.isCenteredOnUser
 
                 LaunchedEffect(Unit) {
                     ArcGISMapController.onMapReady()
+                }
+
+                LaunchedEffect(isCentered) {
+                    emitCenterStateEvent(isCentered)
                 }
 
                 MapView(
@@ -37,6 +42,9 @@ class ArcGISMapFabricView @JvmOverloads constructor(
                     onSingleTapConfirmed = { event ->
                         val mapPoint = event.mapPoint ?: return@MapView
                         emitTapEvent(mapPoint.y, mapPoint.x)
+                    },
+                    onViewpointChangedForCenterAndScale = { viewpoint ->
+                        ArcGISMapController.onCameraMoved(viewpoint)
                     }
                 )
             }
@@ -74,6 +82,15 @@ class ArcGISMapFabricView @JvmOverloads constructor(
         val event = MapTapEvent(surfaceId, id).apply {
             latitude = lat
             longitude = long
+        }
+        UIManagerHelper.getEventDispatcher(reactContext)?.dispatchEvent(event)
+    }
+
+    fun emitCenterStateEvent(isCentered: Boolean) {
+        val reactContext = context as ThemedReactContext
+        val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+        val event = MapCenterStateEvent(surfaceId, id).apply {
+            this.isCentered = isCentered
         }
         UIManagerHelper.getEventDispatcher(reactContext)?.dispatchEvent(event)
     }

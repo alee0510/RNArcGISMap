@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Coordinates } from "@/native/NativeLocationModule.ts"
-import { reverseGeocode } from "@/srevices/ArcGISMap.ts"
+import { reverseGeocode } from "@/srevices/ArcGISGeocode.ts"
 
 type Location = Omit<Coordinates, "accuracy">
 
@@ -10,14 +10,17 @@ type Address = {
     CountryCode: string;
 }
 
-export interface LocationState {
+export interface MapLocationState {
     location: Location;
     address: Address;
+    zoom: number;
     isLoading: boolean;
     setLocation: (location: Location | null) => Promise<void>;
+    increaseZoom: (zoom: number) => void;
+    decreaseZoom: (zoom: number) => void;
 }
 
-export const useLocationStore = create<LocationState>((set) => ({
+export const useMapLocation = create<MapLocationState>((set) => ({
     location: {
         latitude: 0,
         longitude: 0
@@ -27,6 +30,7 @@ export const useLocationStore = create<LocationState>((set) => ({
         CntryName: "",
         CountryCode: "",
     },
+    zoom: 70000.0,
     isLoading: true,
     setLocation: async (location) => {
         if (!location) return
@@ -34,4 +38,6 @@ export const useLocationStore = create<LocationState>((set) => ({
         if (!result) return
         set({ location: location, address: result, isLoading: false })
     },
+    increaseZoom: (zoom) => set((state) => ({ zoom: state.zoom + zoom })),
+    decreaseZoom: (zoom) => set((state) => ({ zoom: state.zoom - zoom })),
 }))

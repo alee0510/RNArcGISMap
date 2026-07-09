@@ -18,27 +18,16 @@ class ArcGISMapViewManager:
         return ArcGISMapFabricView(context)
     }
 
-    override fun setLatitude(view: ArcGISMapFabricView, lat: Double) {
-        view.updateViewpoint(lat = lat)
-    }
-
-    override fun setLongitude(view: ArcGISMapFabricView, long: Double) {
-        view.updateViewpoint(long = long)
-    }
-
     override fun setPinsJson(view: ArcGISMapFabricView?, value: String?) {
         view?.setPins(value)
-    }
-
-    override fun setZoomScale(view: ArcGISMapFabricView?, value: Double) {
-        view?.updateViewpoint(scale = value)
     }
 
     // Event constants: map the JS event name to Fabric's native registration name.
     // Convention is "on<Name>" (JS) <-> "top<Name>" (native registration key).
     override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
         return mutableMapOf(
-            "toMapTap" to mutableMapOf("registrationName" to "onMapTap")
+            "toMapTap" to mutableMapOf("registrationName" to "onMapTap"),
+            "toMapCenterStateChange" to mutableMapOf("registrationName" to "onMapCenterStateChange")
         )
     }
 

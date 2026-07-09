@@ -1,24 +1,28 @@
-import { useLocationStore } from "@/hooks/useLocation.ts";
-import { MD3Colors } from 'react-native-paper';
+import { useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import ActionButton from "@/components/ActionButton.tsx";
+import { MD3Colors } from 'react-native-paper';
+
+import IconButton from "@/components/ui/IconButton.tsx";
 import ButtonNavBar from "@/components/BottonNavBar.tsx";
-import Header from "@/components/Header.tsx";
-import Map from "@/components/Map.tsx";
+import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
+import ArcGISMapView from "@/native/NativeArcGISMapViewNativeComponent.ts"
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function HomeScreen() {
-    const { address } = useLocationStore()
+    const [isCentered, setIsCentered] = useState(true);
     return (
         <View style={styles.container}>
-            <Map />
-            <Header city={address.City} country={address.CntryName} />
+            <ArcGISMapView style={styles.map} onMapCenterStateChange={e => {
+                if (isCentered !== e.nativeEvent.isCentered) {
+                    setIsCentered(e.nativeEvent.isCentered)
+                }
+            }} />
             <ButtonNavBar />
-            <ActionButton icon="crosshairs" border={1} style={styles.recenter} />
+            <ReCenterButton isCentered={isCentered} />
             <View style={styles.zoomaction}>
-                <ActionButton icon="plus" border={1} />
-                <ActionButton icon="minus" border={1} />
+                <IconButton icon="plus" border={1} />
+                <IconButton icon="minus" border={1} />
             </View>
         </View>
     );
@@ -29,10 +33,12 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: MD3Colors.primary90
     },
-    recenter: {
+    map: {
         position: "absolute",
-        bottom: 150,
-        right: 20,
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: 0
     },
     zoomaction: {
         display: "flex",

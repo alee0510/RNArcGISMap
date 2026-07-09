@@ -11,8 +11,12 @@ export enum BasemapStyle {
 export interface Spec extends TurboModule {
     setBaseMapStyle(styleName: BasemapStyle): Promise<BasemapStyle>
     recenterMap(lat: number, lng: number, scale: number): Promise<void>
+    recenterToCurrentLocation(): Promise<void>
+    setUserLocation(latitude: number, longitude: number, recenter: boolean): Promise<void>
     computeRoute(routeGeoJson: string): Promise<void>
     clearRoute(): Promise<void>
+    zoomIn(): Promise<void>
+    zoomOut(): Promise<void>
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('ArcGISMapModule');

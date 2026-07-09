@@ -1,7 +1,7 @@
 import { StyleSheet, View, ViewStyle } from "react-native"
 import { Icon, MD3Colors } from "react-native-paper"
 
-interface ActionButtonProps {
+interface IconButtonProps {
     icon: string,
     iconSize?: number,
     space?: number,
@@ -15,7 +15,7 @@ interface ActionButtonProps {
     style?: ViewStyle
 }
 
-export default function ActionButton({
+export default function IconButton({
     icon,
     iconSize = 24,
     space = 10,
@@ -27,7 +27,7 @@ export default function ActionButton({
     border = 0,
     active = false,
     style
-}: ActionButtonProps) {
+}: IconButtonProps) {
     return (
         <View style={[
             styles.container,

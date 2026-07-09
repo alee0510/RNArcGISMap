@@ -1,8 +1,9 @@
-import { Dimensions, StyleSheet, View } from "react-native"
+import { StyleSheet, View } from "react-native"
+
 import IconButton from "@/components/ui/IconButton.tsx"
+import { SCREEN_HEIGHT } from "@/misc/consts.ts"
 import ArcGISMapModule from "@/native/NativeArcGISMapModule.ts"
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 export default function ZoomButton() {
     const handleZoomIn = async () => {
         await ArcGISMapModule.zoomIn()

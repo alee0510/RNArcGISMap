@@ -27,9 +27,14 @@ class ArcGISMapModule (reactContext: ReactApplicationContext): NativeArcGISMapMo
             "ARCGIS_STREETS" -> BasemapStyle.ArcGISStreets
             "ARCGIS_IMAGERY" -> BasemapStyle.ArcGISImagery
             "ARCGIS_NAVIGATION_NIGHT" -> BasemapStyle.ArcGISNavigationNight
-            else -> BasemapStyle.ArcGISTopographicBase
+            "ARCGIS_TOPOGRAPHIC" -> BasemapStyle.ArcGISTopographicBase
+            else -> {
+                promise?.reject("INVALID_STYLE", "Unknown Basemap style: $styleName")
+                return
+            }
         }
         ArcGISMapController.setBasemapStyle(style)
+        promise?.resolve(styleName)
     }
 
     // routeGeoJson = [startLat, startLong, endLat, endLong]
@@ -105,10 +110,35 @@ class ArcGISMapModule (reactContext: ReactApplicationContext): NativeArcGISMapMo
     }
 
     override fun recenterMap(lat: Double, lng: Double, scale: Double, promise: Promise?) {
-        ArcGISMapController.setViewPoint(lat, lng, scale)
+        ArcGISMapController.setViewPoint(lat, lng, scale, true)
         promise?.resolve(null)
     }
 
+    override fun setUserLocation(
+        latitude: Double,
+        longitude: Double,
+        recenter: Boolean,
+        promise: Promise?
+    ) {
+        val point = Point(longitude, latitude, SpatialReference.wgs84())
+        ArcGISMapController.setCurrentLocation(point, recenter)
+        promise?.resolve(null)
+    }
+
+    override fun recenterToCurrentLocation(promise: Promise?) {
+        ArcGISMapController.recenterToCurrentLocation()
+        promise?.resolve(null)
+    }
+
+    override fun zoomIn(promise: Promise?) {
+        ArcGISMapController.zoomIn()
+        promise?.resolve(null)
+    }
+
+    override fun zoomOut(promise: Promise?) {
+        ArcGISMapController.zoomOut()
+        promise?.resolve(null)
+    }
 
     companion object {
         const val NAME = "ArcGISMapModule"

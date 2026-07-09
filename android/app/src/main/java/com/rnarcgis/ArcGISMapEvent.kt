@@ -15,3 +15,11 @@ class MapTapEvent(surfaceId: Int, viewTag: Int) : Event<MapTapEvent>(surfaceId, 
         putDouble("longitude", longitude)
     }
 }
+
+class MapCenterStateEvent(surfaceId: Int, viewTag: Int) : Event<MapCenterStateEvent>(surfaceId, viewTag) {
+    var isCentered: Boolean = true
+    override fun getEventName() = "onMapCenterStateChange"
+    override fun getEventData(): WritableMap = Arguments.createMap().apply {
+        putBoolean("isCentered", isCentered)
+    }
+}

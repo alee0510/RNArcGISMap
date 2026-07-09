@@ -7,12 +7,14 @@ interface MapTapEven {
     longitude: Double,
 }
 
+interface MapCenterStateEvent {
+    isCentered: boolean;
+}
+
 export interface NativeProps extends ViewProps {
-    longitude?: Double;
-    latitude?: Double;
-    zoomScale?: Double;
     pinsJson?: string; // serialized array of {lat, lng, id}
     onMapTap?: DirectEventHandler<MapTapEven>;
+    onMapCenterStateChange?: DirectEventHandler<MapCenterStateEvent>
 }
 
 export default codegenNativeComponent<NativeProps>("ArcGISMapView") as HostComponent<NativeProps>;

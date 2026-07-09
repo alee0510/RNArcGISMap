@@ -7,6 +7,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.Color
+import com.arcgismaps.geometry.GeodeticCurveType
+import com.arcgismaps.geometry.GeometryEngine
+import com.arcgismaps.geometry.LinearUnit
+import com.arcgismaps.geometry.LinearUnitId
 import com.arcgismaps.geometry.Point
 import com.arcgismaps.geometry.SpatialReference
 import com.arcgismaps.mapping.ArcGISMap
@@ -30,10 +34,14 @@ import kotlin.time.Duration.Companion.seconds
 object ArcGISMapController {
     val basemapStyleState = mutableStateOf<BasemapStyle>(BasemapStyle.ArcGISTopographicBase)
     val map = mutableStateOf(ArcGISMap(basemapStyleState.value))
+    val currentLocationPoint = mutableStateOf<Point?>(null)
+    val isCenteredOnUser = mutableStateOf(false)
 
     val routeOverlay = GraphicsOverlay()
     val pinsOverlay = GraphicsOverlay()
-    val overlays = listOf(pinsOverlay, routeOverlay)
+    val currentPositionOverlay = GraphicsOverlay()
+    private val currentPositionGraphic = Graphic().apply { attributes["type"] = "current-location" }
+    val overlays = listOf(pinsOverlay, routeOverlay, currentPositionOverlay)
 
     val mapViewProxy = MapViewProxy()
     val isMapReady = mutableStateOf(false)
@@ -50,6 +58,11 @@ object ArcGISMapController {
     val scaleState = mutableDoubleStateOf(72000.0)
 
     private const val DEFAULT_ROUTE_SCALE = 5000.0
+    private const val DEFAULT_USER_SCALE = 3000.0
+    private const val CENTERED_THRESHOLD_METERS = 50.0
+    private const val ZOOM_STEP_FACTOR = 0.5 // zoom in halves the scale; zoom out doubles it
+    private const val MIN_SCALE = 500.0
+    private const val MAX_SCALE = 500000.0
 
     fun setViewPoint(lat: Double? = null, long: Double? = null, scale: Double? = null, animated: Boolean = false) {
         lat?.let { latState.doubleValue = it }
@@ -147,5 +160,61 @@ object ArcGISMapController {
 
     fun clearRoute() {
         routeOverlay.graphics.removeAll { it.attributes["type"] == "route" }
+    }
+
+    // Called once from your location provider callback (e.g. LocationModule)
+    // recenterOnFirstFix = true only for the very first location received after map opens
+    fun setCurrentLocation(point: Point, recenterOnFirstFix: Boolean = false) {
+        val isFirstFix = currentLocationPoint.value == null
+        currentLocationPoint.value = point
+
+        val dot = SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, Color.blue, 16f).apply {
+            outline = SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.white, 3f)
+        }
+        currentPositionGraphic.geometry = point
+        currentPositionGraphic.symbol = dot
+
+        if (currentPositionOverlay.graphics.none { it.attributes["type"] == "current-location"}){
+            currentPositionOverlay.graphics.add((currentPositionGraphic))
+        }
+
+        if(isFirstFix && recenterOnFirstFix) {
+            setViewPoint(point.y, point.x, DEFAULT_USER_SCALE, true)
+            isCenteredOnUser.value = true
+        }
+    }
+
+    fun recenterToCurrentLocation() {
+        val point = currentLocationPoint.value ?: return
+        setViewPoint(point.y, point.x, DEFAULT_USER_SCALE, true)
+        isCenteredOnUser.value = true
+    }
+
+    fun onCameraMoved(viewpoint: Viewpoint) {
+        val userPoint = currentLocationPoint.value ?: return
+        val center = viewpoint.targetGeometry.extent.center
+
+        val distanceMeters = GeometryEngine.distanceGeodeticOrNull(
+            point1 = userPoint,
+            point2 = center,
+            distanceUnit = LinearUnit(LinearUnitId.Meters),
+            azimuthUnit = null,
+            curveType = GeodeticCurveType.Geodesic
+        )?.distance ?: return
+
+        val stillCenter = distanceMeters < CENTERED_THRESHOLD_METERS
+        if (stillCenter != isCenteredOnUser.value) {
+            isCenteredOnUser.value = stillCenter
+        }
+    }
+
+    fun zoomIn() {
+        val newScale = (scaleState.doubleValue * ZOOM_STEP_FACTOR).coerceAtLeast(MIN_SCALE)
+        setViewPoint(scale = newScale, animated = true)
+    }
+
+    fun zoomOut() {
+        val newScale = (scaleState.doubleValue / ZOOM_STEP_FACTOR).coerceAtMost(MAX_SCALE)
+        setViewPoint(scale = newScale, animated = true)
     }
 }

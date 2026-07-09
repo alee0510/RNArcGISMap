@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { MD3Colors } from 'react-native-paper';
 
-import ButtonNavBar from "@/components/BottonNavBar.tsx";
+import BottomNavBar from "@/components/feature/BottomNavBar.tsx";
 import MapStyleBottomSheet from '@/components/feature/MapStyleBottomSheet.tsx';
 import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
 import ZoomButton from '@/components/feature/ZoomButton.tsx';
@@ -17,7 +17,7 @@ export default function HomeScreen() {
                     setIsCentered(e.nativeEvent.isCentered)
                 }
             }} />
-            <ButtonNavBar />
+            <BottomNavBar />
             <ReCenterButton isCentered={isCentered} />
             <ZoomButton />
             <MapStyleBottomSheet />

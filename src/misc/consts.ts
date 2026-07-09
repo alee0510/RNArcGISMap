@@ -11,6 +11,27 @@ export type Thumbnail = {
     style: BasemapStyle
     thumbnailUrl: string
 }
+
+export type TabBarItem = {
+    id: string
+    name: string
+}
+
+export const TabBarItems: TabBarItem[] = [
+    {
+        id: "01",
+        name: "map",
+    },
+    {
+        id: "02",
+        name: "pin",
+    },
+    {
+        id: "03",
+        name: "routes",
+    },
+]
+
 export const MapThumbnails: Thumbnail[] = [
     {
         id: "01",

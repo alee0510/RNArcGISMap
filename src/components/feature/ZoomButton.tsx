@@ -13,8 +13,8 @@ export default function ZoomButton() {
     }
     return (
         <View style={styles.container}>
-            <IconButton icon="plus" border={1} onPress={handleZoomIn} />
-            <IconButton icon="minus" border={1} onPress={handleZoomOut} />
+            <IconButton icon="plus" border={1} onPress={handleZoomIn} active={true} />
+            <IconButton icon="minus" border={1} onPress={handleZoomOut} active={true} />
         </View>
     )
 }

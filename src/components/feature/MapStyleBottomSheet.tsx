@@ -88,7 +88,7 @@ export default function BottomSheet() {
 
     return (
         <React.Fragment>
-            <IconButton border={1} icon='layers' onPress={onOpen} style={styles.mapStyleButton} />
+            <IconButton border={1} icon='layers' onPress={onOpen} style={styles.mapStyleButton} active={true} />
             {visible && (
                 <React.Fragment>
                     <AnimatedPressable entering={FadeIn} exiting={FadeOut} onPress={onClose} style={styles.backdrop} />

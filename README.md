@@ -1,97 +1,307 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# react-native-arcgis
 
-# Getting Started
+A React Native (New Architecture / Fabric + TurboModules) wrapper around the **ArcGIS Maps SDK for Kotlin**, providing a map view component, routing, pin markers, basemap switching, and live user-location tracking.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Table of Contents
 
-## Step 1: Start Metro
+- [Architecture Overview](#architecture-overview)
+- [Native Modules](#native-modules)
+  - [ArcGISMapModule](#arcgismapmodule)
+  - [LocationModule](#locationmodule)
+- [Native View Component](#native-view-component)
+  - [ArcGISMapView](#arcgismapview)
+- [React Native Usage](#react-native-usage)
+  - [Basic Map](#basic-map)
+  - [Basemap Style](#basemap-style)
+  - [Pins](#pins)
+  - [Routing](#routing)
+  - [Zoom Controls](#zoom-controls)
+  - [Current Location & Recenter](#current-location--recenter)
+  - [Recenter Button Icon State](#recenter-button-icon-state)
+- [Design Notes](#design-notes)
+- [Setup](#setup)
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+---
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Architecture Overview
 
-```sh
-# Using npm
-npm start
+The native side is organized around a single source of truth: **`ArcGISMapController`**, a Kotlin `object` (singleton) that owns all map state — the `ArcGISMap` instance, graphics overlays, viewpoint (lat/long/scale), and the user's last known location. Both the TurboModule (`ArcGISMapModule`) and the Fabric view (`ArcGISMapFabricView`) read from and write to this single controller, so state never has to be synchronized between two owners.
 
-# OR using Yarn
-yarn start
+```
+┌─────────────────────┐        ┌──────────────────────┐
+│   JS / React Native  │        │                      │
+│                      │──────▶│  ArcGISMapModule      │  (TurboModule — imperative commands)
+│                      │        │  (Promise-based API)  │
+│                      │        └──────────┬───────────┘
+│                      │                   │
+│                      │        ┌──────────▼───────────┐
+│                      │◀───────│  ArcGISMapController  │  (single source of truth)
+│                      │ events │  - map / basemap      │
+│                      │        │  - overlays (pins,    │
+│  <ArcGISMapView />   │        │    route, location)   │
+│  (Fabric component)  │        │  - viewpoint state     │
+│                      │───────▶│  - user location       │
+└─────────────────────┘        └──────────┬───────────┘
+                                            │
+                                 ┌──────────▼───────────┐
+                                 │  ArcGISMapFabricView  │  (Compose MapView host)
+                                 └───────────────────────┘
 ```
 
-## Step 2: Build and run your app
+**Key design principle used throughout:** for every piece of state, ask *"can this value change from anything other than JS explicitly setting it?"*
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+| If the answer is... | Use this pattern |
+|---|---|
+| **No** — only JS ever sets it (e.g. pins, basemap style) | Reactive prop, or JS-held `useState` |
+| **Yes** — native/gestures/other flows can also change it (e.g. zoom scale, camera position) | Imperative TurboModule method that mutates controller state directly |
 
-### Android
+This avoids "two writers" bugs, where a React re-render silently clobbers a value the user just changed via a gesture or button tap.
 
-```sh
-# Using npm
-npm run android
+---
 
-# OR using Yarn
-yarn android
+## Native Modules
+
+### ArcGISMapModule
+
+TurboModule exposing map commands. All methods are Promise-based.
+
+```ts
+export enum BasemapStyle {
+  ARCGIS_TOPOGRAPHIC = 'ARCGIS_TOPOGRAPHIC',
+  ARCGIS_STREETS = 'ARCGIS_STREETS',
+  ARCGIS_IMAGERY = 'ARCGIS_IMAGERY',
+  ARCGIS_NAVIGATION_NIGHT = 'ARCGIS_NAVIGATION_NIGHT',
+}
+
+export interface Spec extends TurboModule {
+  setBaseMapStyle(styleName: BasemapStyle): Promise<BasemapStyle>;
+  recenterMap(lat: number, lng: number, scale: number): Promise<void>;
+  recenterToCurrentLocation(): Promise<void>;
+  setUserLocation(latitude: number, longitude: number, recenter: boolean): Promise<void>;
+  zoomIn(): Promise<void>;
+  zoomOut(): Promise<void>;
+  computeRoute(routeGeoJson: string): Promise<void>;
+  clearRoute(): Promise<void>;
+}
 ```
 
-### iOS
+| Method | Description |
+|---|---|
+| `setBaseMapStyle(styleName)` | Swaps the active basemap. Rejects with `INVALID_STYLE` if the name isn't recognized. Resolves with the applied style name. |
+| `recenterMap(lat, lng, scale)` | **Absolute** move — pans/zooms the camera to an explicit coordinate + scale, animated. Use when JS already knows the target (e.g. a searched address, a selected pin). |
+| `recenterToCurrentLocation()` | **Relative/authoritative** move — recenters on whatever location native already has stored, without JS needing to supply coordinates. Used by a "recenter" button. |
+| `setUserLocation(lat, lng, recenter)` | Called by JS whenever a new device location fix is available (see [LocationModule](#locationmodule)). Updates the blue-dot marker; only recenters the camera if `recenter` is `true` **and** it's the first fix received. |
+| `zoomIn()` / `zoomOut()` | **Relative** scale change — halves/doubles the current scale from whatever it currently is, clamped to `MIN_SCALE`/`MAX_SCALE`. Does not require JS to track or supply the current zoom value. |
+| `computeRoute(routeGeoJson)` | `routeGeoJson` is a serialized array `[startLat, startLong, endLat, endLong]`. Solves a route via `RouteTask`, draws start/end markers + route line, and auto-recenters on the route's start point. Resolves with a JSON string containing `geometry`, `directions`, `totalDistance`, and `totalTime`. |
+| `clearRoute()` | Removes all route-tagged graphics (line + start/end markers) from the map. |
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+**Why `recenterMap` and `recenterToCurrentLocation` are separate methods:** `recenterMap` is a generic "go to this point" primitive that requires JS to supply coordinates. `recenterToCurrentLocation` has no arguments because native is the sole authority on the device's live location — routing this through `recenterMap` would require JS to re-fetch coordinates from `LocationModule` on every tap, duplicating a value native already holds and risking a stale read if the device moved in between.
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+### LocationModule
 
-```sh
-bundle install
+TurboModule for location permission handling and position fixes.
+
+```ts
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+}
+
+export enum LocationPermission {
+  FINE = 'fine',
+  COARSE = 'coarse',
+  DENIED = 'denied',
+}
+
+export interface Spec extends TurboModule {
+  checkLocationPermission(): Promise<LocationPermission>;
+  requestLocationPermission(): Promise<LocationPermission>;
+  getCurrentLocation(): Promise<Coordinates | null>;
+}
 ```
 
-Then, and every time you update your native dependencies, run:
+| Method | Description |
+|---|---|
+| `checkLocationPermission()` | Returns current permission state without prompting. |
+| `requestLocationPermission()` | Prompts the OS permission dialog if not already granted. |
+| `getCurrentLocation()` | One-shot location fix. Returns `null` if location services are unavailable even with permission granted. |
 
-```sh
-bundle exec pod install
+> **Note:** this is a one-shot API, not a continuous stream. For a live-following blue dot, extend this module with `startLocationUpdates(intervalMs)` / `stopLocationUpdates()` methods that emit `onLocationUpdate` events via `NativeEventEmitter`, feeding each update into `ArcGISMapModule.setUserLocation(lat, lng, false)`.
+
+**Why permission + location orchestration lives in JS, not native-to-native:** `ArcGISMapModule` and `LocationModule` are independent TurboModules. Permission UX (when to prompt, what to do on denial) is a product/UX decision that's easier to control and test from JS, which already has both promises available — so the flow is JS asks permission → JS gets coordinates → JS hands coordinates to `ArcGISMapModule.setUserLocation(...)`.
+
+---
+
+## Native View Component
+
+### ArcGISMapView
+
+Fabric view component hosting a Jetpack Compose `MapView` from the ArcGIS Toolkit.
+
+```ts
+interface MapTapEvent {
+  latitude: Double;
+  longitude: Double;
+}
+
+interface MapCenterStateEvent {
+  isCentered: boolean;
+}
+
+export interface NativeProps extends ViewProps {
+  pinsJson?: string; // serialized array of { id, lat, long }
+  onMapTap?: DirectEventHandler<MapTapEvent>;
+  onMapCenterStateChange?: DirectEventHandler<MapCenterStateEvent>;
+}
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+| Prop / Event | Type | Description |
+|---|---|---|
+| `pinsJson` | `string` (prop) | Serialized JSON array of pins to render: `[{ id, lat, long }]`. Safe as a reactive prop since JS is the only writer of pin data. |
+| `onMapTap` | event | Fires with `{ latitude, longitude }` when the user taps the map. |
+| `onMapCenterStateChange` | event | Fires with `{ isCentered: boolean }` whenever the camera crosses the "centered on user" distance threshold (50m) in either direction. Drives the recenter button's icon state. |
 
-```sh
-# Using npm
-npm run ios
+> **Deliberately *not* exposed as reactive props:** `latitude`, `longitude`, `zoomScale`. These values can change from many places other than a direct JS prop update — pinch gestures, `zoomIn()`/`zoomOut()`, route auto-recentering, `recenterToCurrentLocation()` — so binding them reactively risks a stray re-render silently resetting the camera to a stale prop value. Set the initial viewpoint imperatively instead:
+>
+> ```ts
+> useEffect(() => {
+>   ArcGISMapModule.recenterMap(34.0, -118.0, 72000.0);
+> }, []);
+> ```
 
-# OR using Yarn
-yarn ios
+---
+
+## React Native Usage
+
+### Basic Map
+
+```tsx
+import ArcGISMapView from './specs/NativeArcGISMapViewNativeComponent';
+import ArcGISMapModule from './specs/NativeArcGISMapModule';
+
+function MapScreen() {
+  useEffect(() => {
+    ArcGISMapModule.recenterMap(34.0, -118.0, 72000.0);
+  }, []);
+
+  return <ArcGISMapView style={{ flex: 1 }} />;
+}
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Basemap Style
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+Safe to hold in JS `useState` — native never changes this value on its own, so there's no risk of desync.
 
-## Step 3: Modify your app
+```tsx
+import { BasemapStyle } from './specs/NativeArcGISMapModule';
 
-Now that you have successfully run the app, let's make changes!
+const [basemapStyle, setBasemapStyle] = useState(BasemapStyle.ARCGIS_TOPOGRAPHIC);
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+async function handleSelectStyle(style: BasemapStyle) {
+  setBasemapStyle(style);
+  await ArcGISMapModule.setBaseMapStyle(style);
+}
+```
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+### Pins
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+```tsx
+const pins = [
+  { id: '1', lat: 34.05, long: -118.25 },
+  { id: '2', lat: 34.06, long: -118.24 },
+];
 
-## Congratulations! :tada:
+<ArcGISMapView pinsJson={JSON.stringify(pins)} />
+```
 
-You've successfully run and modified your React Native App. :partying_face:
+### Routing
 
-### Now what?
+```tsx
+async function showRoute(start: Coord, end: Coord) {
+  const routeGeoJson = JSON.stringify([start.lat, start.lng, end.lat, end.lng]);
+  const result = await ArcGISMapModule.computeRoute(routeGeoJson);
+  const { directions, totalDistance, totalTime } = JSON.parse(result);
+  // route line + start/end markers are drawn natively;
+  // camera auto-recenters on the route's start point
+}
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+async function clearRoute() {
+  await ArcGISMapModule.clearRoute();
+}
+```
 
-# Troubleshooting
+### Zoom Controls
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+No JS-side zoom state needed — native owns the current scale.
 
-# Learn More
+```tsx
+<Button title="+" onPress={() => ArcGISMapModule.zoomIn()} />
+<Button title="-" onPress={() => ArcGISMapModule.zoomOut()} />
+```
 
-To learn more about React Native, take a look at the following resources:
+### Current Location & Recenter
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```tsx
+import { NativeEventEmitter, NativeModules } from 'react-native';
+import LocationModule, { LocationPermission } from './specs/NativeLocationModule';
+import ArcGISMapModule from './specs/NativeArcGISMapModule';
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function initUserLocation() {
+    let permission = await LocationModule.checkLocationPermission();
+    if (permission === LocationPermission.DENIED) {
+      permission = await LocationModule.requestLocationPermission();
+    }
+    if (permission === LocationPermission.DENIED || cancelled) return;
+
+    const coords = await LocationModule.getCurrentLocation();
+    if (coords && !cancelled) {
+      // recenter = true → shows the marker AND zooms/pans to it (first fix only)
+      await ArcGISMapModule.setUserLocation(coords.latitude, coords.longitude, true);
+    }
+  }
+
+  initUserLocation();
+  return () => { cancelled = true; };
+}, []);
+
+// Recenter button — no coordinates needed, native already has the last fix
+<Button onPress={() => ArcGISMapModule.recenterToCurrentLocation()} />
+```
+
+### Recenter Button Icon State
+
+Listen for `onMapCenterStateChange` to know when to swap the recenter button's icon (e.g. filled vs. outlined) based on whether the camera has drifted away from the user's location.
+
+```tsx
+const [isCentered, setIsCentered] = useState(true);
+
+<ArcGISMapView
+  onMapCenterStateChange={(e) => setIsCentered(e.nativeEvent.isCentered)}
+/>
+
+<Button
+  onPress={() => ArcGISMapModule.recenterToCurrentLocation()}
+  icon={isCentered ? 'location-filled' : 'location-outline'}
+/>
+```
+
+---
+
+## Design Notes
+
+- **Single controller, single writer per state field.** `ArcGISMapController` separates *camera/viewpoint state* (`latState`, `longState`, `scaleState`) from *device location state* (`currentLocationPoint`). These represent different things — where the map is looking vs. where the user physically is — and only coincide momentarily right after a recenter. Merging them would break the off-center detection logic, which depends on comparing the two.
+- **Pending viewpoint queue.** If a viewpoint change is requested before the map view has finished composing (`isMapReady == false`), the request is captured and replayed once the view signals readiness via `onMapReady()`, rather than silently dropped or crashed on an unbound `MapViewProxy`.
+- **Spatial reference consistency.** Off-center detection projects the device's WGS84 location into the map's current spatial reference (typically Web Mercator) before computing geodetic distance — `GeometryEngine.distanceGeodeticOrNull` requires matching spatial references and fails silently (returns `null`) otherwise.
+- **Graphics draw order matters.** Within a `GraphicsOverlay`, later entries in `graphics` render on top. Route lines are added before start/end markers so markers remain visible on top of the line. Overlay order in the `overlays` list follows the same rule (`pinsOverlay` → `routeOverlay` → `currentPositionOverlay`).
+
+---
+
+## Setup
+
+1. Set your ArcGIS API key in `local.properties` or your CI secrets as `ARCGIS_API_KEY`, consumed via `BuildConfig.ARCGIS_API_KEY` in `MainApplication.kt`.
+2. Ensure `ACCESS_FINE_LOCATION` (and `ACCESS_COARSE_LOCATION`) are declared in `AndroidManifest.xml` for `LocationModule` to function.
+3. Register both `ArcGISMapModule` and `LocationModule` in your native package (`MyPackage.kt`), and `ArcGISMapViewManager` as a view manager.

@@ -1,30 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { MD3Colors, Icon, Text } from 'react-native-paper';
+import { MD3Colors, Icon } from 'react-native-paper';
 import Animated, { FadeIn, FadeInUp, FadeOut, LinearTransition, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useDebounce } from 'use-debounce';
 
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '@/misc/consts.ts';
+import SuggestionItem from '@/components/feature/SuggestionItem.tsx';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
-
-function SugesstionItem() {
-    return (
-        <React.Fragment>
-            <View style={styles.suggestionItem}>
-                <View style={styles.suggestionIcon}>
-                    <Icon source="map-marker" size={24} color={MD3Colors.primary40} />
-                </View>
-                <Text style={styles.suggestionText}>Location Name</Text>
-                <View style={styles.suggestionIcon}>
-                    <Icon source="arrow-top-left" size={24} color={MD3Colors.primary40} />
-                </View>
-            </View>
-            <View style={styles.divider} />
-        </React.Fragment>
-    )
-}
-
 export default function Header() {
     const [focused, setFocused] = useState(false)
     const [query, setQuery] = useState("")
@@ -91,10 +74,10 @@ export default function Header() {
             {focused && (
                 <React.Fragment>
                     <AnimatedPressable entering={FadeIn} exiting={FadeOut} onPress={onCancel} style={styles.backdrop} />
-                    <Animated.View layout={LinearTransition.duration(250)} entering={FadeInUp} exiting={FadeOut} style={styles.suggestionContainer}>
-                        <SugesstionItem />
-                        <SugesstionItem />
-                        <SugesstionItem />
+                    <Animated.View layout={LinearTransition.duration(250)} entering={FadeInUp} exiting={FadeOut} style={styles.suggestion}>
+                        <SuggestionItem />
+                        <SuggestionItem />
+                        <SuggestionItem isLast={true} />
                     </Animated.View>
                 </React.Fragment>
             )}
@@ -133,7 +116,7 @@ const styles = StyleSheet.create({
         zIndex: 4,
         backgroundColor: "rgba(0,0,0,0.3)"
     },
-    suggestionContainer: {
+    suggestion: {
         backgroundColor: MD3Colors.primary100,
         zIndex: 5,
         borderRadius: 25,
@@ -144,25 +127,4 @@ const styles = StyleSheet.create({
         padding: 15,
         width: SCREEN_WIDTH - 40
     },
-    suggestionItem: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-    },
-    suggestionIcon: {
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 50,
-        padding: 7
-    },
-    suggestionText: {
-        flex: 1,
-        fontSize: 16
-    },
-    divider: {
-        height: 1,
-        marginHorizontal: 15,
-        backgroundColor: MD3Colors.primary60
-    }
 });

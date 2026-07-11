@@ -21,11 +21,10 @@ export default function ZoomButton() {
 
 const styles = StyleSheet.create({
     container: {
-        display: "flex",
         flexDirection: "column",
         position: "absolute",
-        gap: 10,
-        bottom: SCREEN_HEIGHT / 2,
+        top: SCREEN_HEIGHT * 0.4,
         right: 20,
+        gap: 10,
     }
 })

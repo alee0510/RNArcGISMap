@@ -29,23 +29,23 @@ The native side is organized around a single source of truth: **`ArcGISMapContro
 
 ```
 ┌─────────────────────┐        ┌──────────────────────┐
-│   JS / React Native  │        │                      │
-│                      │──────▶│  ArcGISMapModule      │  (TurboModule — imperative commands)
-│                      │        │  (Promise-based API)  │
-│                      │        └──────────┬───────────┘
-│                      │                   │
-│                      │        ┌──────────▼───────────┐
-│                      │◀───────│  ArcGISMapController  │  (single source of truth)
-│                      │ events │  - map / basemap      │
-│                      │        │  - overlays (pins,    │
-│  <ArcGISMapView />   │        │    route, location)   │
-│  (Fabric component)  │        │  - viewpoint state     │
-│                      │───────▶│  - user location       │
+│   JS / React Native │        │                      │
+│                     │──────▶ │  ArcGISMapModule     │  (TurboModule — imperative commands)
+│                     │        │  (Promise-based API) │
+│                     │        └──────────┬───────────┘
+│                     │                   │
+│                     │        ┌──────────▼───────────┐
+│                     │◀───────│  ArcGISMapController │  (single source of truth)
+│                     │ events │  - map / basemap     │
+│                     │        │  - overlays (pins,   │
+│  <ArcGISMapView />  │        │    route, location)  │
+│  (Fabric component) │        │  - viewpoint state   │
+│                     │───────▶│  - user location     │
 └─────────────────────┘        └──────────┬───────────┘
-                                            │
-                                 ┌──────────▼───────────┐
-                                 │  ArcGISMapFabricView  │  (Compose MapView host)
-                                 └───────────────────────┘
+                                          │
+                               ┌──────────▼───────────┐
+                               │  ArcGISMapFabricView │  (Compose MapView host)
+                               └──────────────────────┘
 ```
 
 **Key design principle used throughout:** for every piece of state, ask *"can this value change from anything other than JS explicitly setting it?"*

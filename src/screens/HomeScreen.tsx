@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { MD3Colors } from 'react-native-paper';
 
 import BottomNavBar from "@/components/feature/BottomNavBar.tsx";
+import Header from "@/components/feature/Header.tsx"
 import MapStyleBottomSheet from '@/components/feature/MapStyleBottomSheet.tsx';
 import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
 import ZoomButton from '@/components/feature/ZoomButton.tsx';
@@ -42,6 +43,7 @@ export default function HomeScreen() {
                     }
                 }}
             />
+            <Header />
             <BottomNavBar focusId={focusedId} onTabFocus={onTabFocus} />
             <ReCenterButton isCentered={isCentered} />
             <ZoomButton />

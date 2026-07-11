@@ -1,12 +1,12 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { MD3Colors, Icon, Text } from 'react-native-paper';
 
 
-export default function SuggestionItem({ isLast = false, text = "Location Name" }: { isLast?: boolean, text?: string }) {
+export default function SuggestionItem({ isLast = false, text = "Location Name", onPress = () => { } }: { isLast?: boolean, text?: string, onPress?: () => void }) {
     return (
         <React.Fragment>
-            <View style={styles.item}>
+            <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7} delayPressIn={50}>
                 <View style={styles.icon}>
                     <Icon source="map-marker" size={24} color={MD3Colors.primary40} />
                 </View>
@@ -14,7 +14,7 @@ export default function SuggestionItem({ isLast = false, text = "Location Name" 
                 <View style={styles.icon}>
                     <Icon source="arrow-top-left" size={24} color={MD3Colors.primary40} />
                 </View>
-            </View>
+            </TouchableOpacity>
             {!isLast && <View style={styles.divider} />}
         </React.Fragment>
     )
@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         marginHorizontal: 15,
-        backgroundColor: MD3Colors.primary60
+        backgroundColor: MD3Colors.primary60,
+        opacity: 0.3
     }
 });

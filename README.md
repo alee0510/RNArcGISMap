@@ -2,6 +2,8 @@
 
 A React Native (New Architecture / Fabric + TurboModules) wrapper around the **ArcGIS Maps SDK for Kotlin**, providing a map view component, routing, pin markers, basemap switching, and live user-location tracking.
 
+![arcgis ui](./screenshots/Screenshot%202026-07-12%20at%2000.16.04.png)
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)

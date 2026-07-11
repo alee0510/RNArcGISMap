@@ -41,7 +41,7 @@ export default function IconButton({
     })
 
     const handlePressIn = () => {
-        scale.value = withSpring(0.7, { damping: 10, stiffness: 150 })
+        scale.value = withSpring(0.85, { damping: 10, stiffness: 150 })
     }
 
     const handlePressOut = () => {

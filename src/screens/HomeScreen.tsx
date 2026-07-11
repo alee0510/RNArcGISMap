@@ -1,8 +1,10 @@
+/* eslint-disable react-native/no-inline-styles */
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { MD3Colors } from 'react-native-paper';
 
 import BottomNavBar from "@/components/feature/BottomNavBar.tsx";
+import Header from "@/components/feature/Header.tsx"
 import MapStyleBottomSheet from '@/components/feature/MapStyleBottomSheet.tsx';
 import ReCenterButton from '@/components/feature/ReCenterButton.tsx';
 import ZoomButton from '@/components/feature/ZoomButton.tsx';
@@ -33,7 +35,7 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
-            <ArcGISMapView
+            {/* <ArcGISMapView
                 style={styles.map}
                 pinsJson={pinJSON}
                 onMapCenterStateChange={e => {
@@ -41,7 +43,8 @@ export default function HomeScreen() {
                         setIsCentered(e.nativeEvent.isCentered)
                     }
                 }}
-            />
+            /> */}
+            <Header />
             <BottomNavBar focusId={focusedId} onTabFocus={onTabFocus} />
             <ReCenterButton isCentered={isCentered} />
             <ZoomButton />

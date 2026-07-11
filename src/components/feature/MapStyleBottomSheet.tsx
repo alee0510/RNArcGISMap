@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MD3Colors } from 'react-native-paper';
-import Animated, { FadeIn, FadeOut, interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated"
+import Animated, { FadeIn, FadeOut, interpolate, SlideInDown, SlideOutDown, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated"
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-worklets';
 
@@ -93,7 +93,7 @@ export default function BottomSheet() {
                 <React.Fragment>
                     <AnimatedPressable entering={FadeIn} exiting={FadeOut} onPress={onClose} style={styles.backdrop} />
                     <GestureDetector gesture={pan}>
-                        <Animated.View style={[styles.container, animatedStyle]}>
+                        <Animated.View style={[styles.container, animatedStyle]} entering={SlideInDown.springify(5).mass(5)} exiting={SlideOutDown}>
                             <View style={styles.handler} />
                             <Text style={styles.title}>Map Type</Text>
                             <View style={styles.body}>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     },
     mapStyleButton: {
         position: "absolute",
-        top: SCREEN_HEIGHT * 0.1,
+        top: SCREEN_HEIGHT * 0.15,
         right: 20
     },
     mapTypeContainer: {

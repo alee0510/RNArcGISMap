@@ -1,7 +1,7 @@
 import { Dimensions } from "react-native";
 import { BasemapStyle } from "@/native/NativeArcGISMapModule.ts"
 
-export const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+export const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('screen');
 export const MIN_SHEET_HEIGHT = Math.abs(SCREEN_HEIGHT / 4)
 export const OFFSET_SHEET_TESHOLD = 20
 

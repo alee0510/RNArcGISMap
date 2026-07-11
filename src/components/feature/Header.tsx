@@ -5,17 +5,18 @@ import Animated, { FadeIn, FadeInUp, FadeOut, LinearTransition, useAnimatedStyle
 import { useDebounce } from 'use-debounce';
 
 import SuggestionItem from '@/components/feature/SuggestionItem.tsx';
+import { useMapLocation } from '@/hooks/useMapLocation.ts';
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '@/misc/consts.ts';
-import { getSuggestion } from "@/srevices/ArcGISGeocodeService.ts"
+import ArcGISMapModule from "@/native/NativeArcGISMapModule.ts"
+import { getSuggestion, findCandidates } from "@/srevices/ArcGISGeocodeService.ts"
 import { Suggestion } from "@/types/ArcGISAPIResponse.ts"
-import { useMapLocation } from '@/hooks/useMapLocation';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 export default function Header() {
     const [focused, setFocused] = useState(false)
-    const [query, setQuery] = useState("")
-    const [items, setItems] = useState<Suggestion[]>([])
     const { location, address } = useMapLocation()
+    const [query, setQuery] = useState(`${address.City}, ${address.CountryCode}`)
+    const [items, setItems] = useState<Suggestion[]>([])
     const [debouncedQuery] = useDebounce(query, 1000)
     const inputRef = useRef<TextInput>(null)
     const iconOpacity = useSharedValue(0)
@@ -29,6 +30,17 @@ export default function Header() {
         setQuery(`${address.City}, ${address.CountryCode}`)
         setItems([])
         inputRef.current?.blur()
+    }
+
+    const onSelectItem = async (suggestion: Suggestion) => {
+        const result = await findCandidates(suggestion)
+        if (result?.location) {
+            await ArcGISMapModule.recenterMap(result.location.y, result.location.x, 5000)
+            setFocused(false)
+            setQuery(result?.address)
+            setItems([])
+            inputRef.current?.blur()
+        }
     }
 
     const markerAnimatedStyle = useAnimatedStyle(() => {
@@ -94,7 +106,12 @@ export default function Header() {
                     <AnimatedPressable entering={FadeIn} exiting={FadeOut} onPress={onCancel} style={styles.backdrop} />
                     <Animated.View layout={LinearTransition.duration(250)} entering={FadeInUp} exiting={FadeOut} style={styles.suggestion}>
                         {items.length ? items.map((item, index) => (
-                            <SuggestionItem key={item.magicKey} text={item.text} isLast={index === items.length - 1} />
+                            <SuggestionItem
+                                key={item.magicKey}
+                                text={item.text}
+                                isLast={index === items.length - 1}
+                                onPress={() => onSelectItem(item)}
+                            />
                         )) : (
                             <View style={styles.defaultTextContainer}>
                                 <Text style={styles.defaultText}>No result found.</Text>
@@ -131,7 +148,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     input: {
-        fontSize: 16
+        fontSize: 16,
+        color: MD3Colors.primary0
     },
     backdrop: {
         ...StyleSheet.absoluteFill,

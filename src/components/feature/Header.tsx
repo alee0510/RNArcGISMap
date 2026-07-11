@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { MD3Colors, Icon, Text } from 'react-native-paper';
-import Animated, { FadeIn, FadeInUp, FadeOut, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp, FadeOut, LinearTransition, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useDebounce } from 'use-debounce';
 
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '@/misc/consts.ts';
@@ -91,7 +91,7 @@ export default function Header() {
             {focused && (
                 <React.Fragment>
                     <AnimatedPressable entering={FadeIn} exiting={FadeOut} onPress={onCancel} style={styles.backdrop} />
-                    <Animated.View entering={FadeInUp} exiting={FadeOut} style={styles.suggestionContainer}>
+                    <Animated.View layout={LinearTransition.duration(250)} entering={FadeInUp} exiting={FadeOut} style={styles.suggestionContainer}>
                         <SugesstionItem />
                         <SugesstionItem />
                         <SugesstionItem />

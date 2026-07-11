@@ -35,7 +35,8 @@ const styles = StyleSheet.create({
     },
     text: {
         flex: 1,
-        fontSize: 16
+        fontSize: 16,
+        textTransform: "capitalize",
     },
     divider: {
         height: 1,

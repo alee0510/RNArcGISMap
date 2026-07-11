@@ -3,14 +3,14 @@ import { StyleSheet, View } from 'react-native';
 import { MD3Colors, Icon, Text } from 'react-native-paper';
 
 
-export default function SuggestionItem({ isLast = false }: { isLast?: boolean }) {
+export default function SuggestionItem({ isLast = false, text = "Location Name" }: { isLast?: boolean, text?: string }) {
     return (
         <React.Fragment>
             <View style={styles.item}>
                 <View style={styles.icon}>
                     <Icon source="map-marker" size={24} color={MD3Colors.primary40} />
                 </View>
-                <Text style={styles.text}>Location Name</Text>
+                <Text style={styles.text}>{text}</Text>
                 <View style={styles.icon}>
                     <Icon source="arrow-top-left" size={24} color={MD3Colors.primary40} />
                 </View>

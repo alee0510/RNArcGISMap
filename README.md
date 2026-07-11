@@ -82,10 +82,10 @@ export interface Spec extends TurboModule {
   recenterMap(lat: number, lng: number, scale: number): Promise<void>;
   recenterToCurrentLocation(): Promise<void>;
   setUserLocation(latitude: number, longitude: number, recenter: boolean): Promise<void>;
-  zoomIn(): Promise<void>;
-  zoomOut(): Promise<void>;
   computeRoute(routeGeoJson: string): Promise<void>;
   clearRoute(): Promise<void>;
+  zoomIn(): Promise<void>;
+  zoomOut(): Promise<void>;
 }
 ```
 
@@ -122,6 +122,10 @@ export interface Spec extends TurboModule {
   checkLocationPermission(): Promise<LocationPermission>;
   requestLocationPermission(): Promise<LocationPermission>;
   getCurrentLocation(): Promise<Coordinates | null>;
+  startLocationUpdates(intervalInMs: number): Promise<void>;
+  stopLocationUpdates(): Promise<void>;
+  addListener(eventName: string, callback: (event: Coordinates) => void): void;
+  removeListeners(eventName: string): void;
 }
 ```
 
@@ -130,8 +134,12 @@ export interface Spec extends TurboModule {
 | `checkLocationPermission()` | Returns current permission state without prompting. |
 | `requestLocationPermission()` | Prompts the OS permission dialog if not already granted. |
 | `getCurrentLocation()` | One-shot location fix. Returns `null` if location services are unavailable even with permission granted. |
+| `startLocationUpdates(intervalInMs)` | Starts continuous location updates emitted as `onLocationUpdate` events at the specified interval. |
+| `stopLocationUpdates()` | Stops continuous location updates. |
+| `addListener(eventName, callback)` | Subscribes to the location event (required signature for TurboModules/NativeEventEmitter). |
+| `removeListeners(eventName)` | Unsubscribes from the location event (required signature for TurboModules/NativeEventEmitter). |
 
-> **Note:** this is a one-shot API, not a continuous stream. For a live-following blue dot, extend this module with `startLocationUpdates(intervalMs)` / `stopLocationUpdates()` methods that emit `onLocationUpdate` events via `NativeEventEmitter`, feeding each update into `ArcGISMapModule.setUserLocation(lat, lng, false)`.
+> **Note:** This module supports both one-shot queries and a continuous stream of location updates. For continuous location tracking, use `startLocationUpdates(intervalMs)` / `stopLocationUpdates()`, and listen for the `onLocationUpdate` event using `NativeEventEmitter` in React Native.
 
 **Why permission + location orchestration lives in JS, not native-to-native:** `ArcGISMapModule` and `LocationModule` are independent TurboModules. Permission UX (when to prompt, what to do on denial) is a product/UX decision that's easier to control and test from JS, which already has both promises available — so the flow is JS asks permission → JS gets coordinates → JS hands coordinates to `ArcGISMapModule.setUserLocation(...)`.
 
@@ -144,7 +152,7 @@ export interface Spec extends TurboModule {
 Fabric view component hosting a Jetpack Compose `MapView` from the ArcGIS Toolkit.
 
 ```ts
-interface MapTapEvent {
+interface MapTapEven {
   latitude: Double;
   longitude: Double;
 }
@@ -154,15 +162,15 @@ interface MapCenterStateEvent {
 }
 
 export interface NativeProps extends ViewProps {
-  pinsJson?: string; // serialized array of { id, lat, long }
-  onMapTap?: DirectEventHandler<MapTapEvent>;
+  pinsJson?: string; // serialized array of {lat, long, id}
+  onMapTap?: DirectEventHandler<MapTapEven>;
   onMapCenterStateChange?: DirectEventHandler<MapCenterStateEvent>;
 }
 ```
 
 | Prop / Event | Type | Description |
 |---|---|---|
-| `pinsJson` | `string` (prop) | Serialized JSON array of pins to render: `[{ id, lat, long }]`. Safe as a reactive prop since JS is the only writer of pin data. |
+| `pinsJson` | `string` (prop) | Serialized JSON array of pins to render: `[{ id, lat, long }]` (or `[{ lat, long, id }]`). Safe as a reactive prop since JS is the only writer of pin data. |
 | `onMapTap` | event | Fires with `{ latitude, longitude }` when the user taps the map. |
 | `onMapCenterStateChange` | event | Fires with `{ isCentered: boolean }` whenever the camera crosses the "centered on user" distance threshold (50m) in either direction. Drives the recenter button's icon state. |
 
@@ -181,8 +189,8 @@ export interface NativeProps extends ViewProps {
 ### Basic Map
 
 ```tsx
-import ArcGISMapView from './specs/NativeArcGISMapViewNativeComponent';
-import ArcGISMapModule from './specs/NativeArcGISMapModule';
+import ArcGISMapView from './src/native/NativeArcGISMapViewNativeComponent';
+import ArcGISMapModule from './src/native/NativeArcGISMapModule';
 
 function MapScreen() {
   useEffect(() => {
@@ -198,7 +206,7 @@ function MapScreen() {
 Safe to hold in JS `useState` — native never changes this value on its own, so there's no risk of desync.
 
 ```tsx
-import { BasemapStyle } from './specs/NativeArcGISMapModule';
+import { BasemapStyle } from './src/native/NativeArcGISMapModule';
 
 const [basemapStyle, setBasemapStyle] = useState(BasemapStyle.ARCGIS_TOPOGRAPHIC);
 
@@ -248,9 +256,10 @@ No JS-side zoom state needed — native owns the current scale.
 
 ```tsx
 import { NativeEventEmitter, NativeModules } from 'react-native';
-import LocationModule, { LocationPermission } from './specs/NativeLocationModule';
-import ArcGISMapModule from './specs/NativeArcGISMapModule';
+import LocationModule, { LocationPermission } from './src/native/NativeLocationModule';
+import ArcGISMapModule from './src/native/NativeArcGISMapModule';
 
+// 1. One-shot user location initialization
 useEffect(() => {
   let cancelled = false;
 
@@ -270,6 +279,24 @@ useEffect(() => {
 
   initUserLocation();
   return () => { cancelled = true; };
+}, []);
+
+// 2. Continuous location updates (optional, for active location tracking)
+useEffect(() => {
+  const locationEmitter = new NativeEventEmitter(NativeModules.LocationModule);
+  
+  const subscription = locationEmitter.addListener('onLocationUpdate', (coords) => {
+    // Hand coords to ArcGISMapModule (recenter = false so the camera doesn't steal focus)
+    ArcGISMapModule.setUserLocation(coords.latitude, coords.longitude, false);
+  });
+
+  // Start updates at an interval of 5000ms
+  LocationModule.startLocationUpdates(5000);
+
+  return () => {
+    subscription.remove();
+    LocationModule.stopLocationUpdates();
+  };
 }, []);
 
 // Recenter button — no coordinates needed, native already has the last fix
